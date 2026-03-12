@@ -1,19 +1,15 @@
 /**
- * useGitHubData.js
+ * useGitHubData.js — GitSkyline
  *
- * Fetches contribution data using the public GitHub contributions proxy.
- * No token required — username only.
+ * Fetches ALL years of contribution data from our own Vercel serverless
+ * function at /api/contributions/[username].
  *
- * Primary:  https://github-contributions-api.jogruber.de/v4/{username}
- * Fallback: https://github-contributions.vercel.app/api?username={username}
+ * No token needed on the client — token lives on the server.
  *
  * Returns data as [{ date: "YYYY-MM-DD", count: number }]
  */
 
 import { useState, useCallback } from "react";
-
-const PRIMARY = (u) => `https://github-contributions-api.jogruber.de/v4/${u}?y=last`;
-const FALLBACK = (u) => `https://github-contributions.vercel.app/api?username=${u}`;
 
 export function useGitHubData() {
   const [data, setData] = useState(null);
@@ -32,45 +28,23 @@ export function useGitHubData() {
     setData(null);
 
     try {
-      // Try primary proxy first
-      let days = null;
+      const res = await fetch(`/api/contributions/${encodeURIComponent(username.trim())}`);
+      const json = await res.json();
 
-      try {
-        const res = await fetch(PRIMARY(username.trim()));
-        if (res.ok) {
-          const json = await res.json();
-          // jogruber API: { contributions: [{ date, count }] }
-          if (Array.isArray(json.contributions)) {
-            days = json.contributions.map(d => ({
-              date: d.date,
-              count: d.count ?? 0,
-            }));
-          }
-        }
-      } catch (_) { /* fall through to fallback */ }
-
-      // Fallback proxy
-      if (!days) {
-        const res = await fetch(FALLBACK(username.trim()));
-        if (!res.ok) throw new Error(`User "${username}" not found.`);
-        const json = await res.json();
-        // vercel proxy: { contributions: { [date]: count } } or similar
-        if (json.contributions && typeof json.contributions === "object") {
-          days = Object.entries(json.contributions).map(([date, count]) => ({
-            date,
-            count: Number(count) || 0,
-          }));
-        } else {
-          throw new Error(`Could not load contributions for "${username}".`);
-        }
+      if (!res.ok) {
+        throw new Error(json.error || `Could not load data for "${username}".`);
       }
 
-      if (!days || days.length === 0) {
+      if (!json.contributions || json.contributions.length === 0) {
         throw new Error(`No contribution data found for "${username}".`);
       }
 
-      setProfile({ name: username.trim(), avatarUrl: `https://github.com/${username.trim()}.png?size=32` });
-      setData(days);
+      setProfile({
+        name: username.trim(),
+        avatarUrl: `https://github.com/${username.trim()}.png?size=32`,
+        years: json.years ?? [],
+      });
+      setData(json.contributions);
       setLoading(false);
       return true;
 

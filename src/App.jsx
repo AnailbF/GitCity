@@ -1,5 +1,6 @@
 /**
- * App.jsx
+ * App.jsx — GitSkyline
+ * https://gitskyline.natrajx.in
  *
  * Auth flow (no token needed):
  *  1. ?username=torvalds in URL  → auto-fetch
@@ -78,7 +79,7 @@ export default function App() {
       }}>
         <div style={{ fontSize: "2rem", animation: "spin 1s linear infinite" }}>⬡</div>
         <div style={{ fontSize: "0.75rem", letterSpacing: "0.15em" }}>
-          {username ? `Fetching ${username}'s contributions…` : "Initialising…"}
+          {username ? `Fetching ${username}'s skyline…` : "Initialising GitSkyline…"}
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -88,12 +89,15 @@ export default function App() {
   // ── Login screen ─────────────────────────────────────────────────────────
   if (screen === "connect") {
     return (
-      <GitHubConnect
-        onConnect={handleConnect}
-        loading={loading}
-        error={error}
-        theme={currentTheme}
-      />
+      <>
+        <GitHubConnect
+          onConnect={handleConnect}
+          loading={loading}
+          error={error}
+          theme={currentTheme}
+        />
+        <Backlink theme={currentTheme} />
+      </>
     );
   }
 
@@ -110,12 +114,6 @@ export default function App() {
         title={graphTitle}
       />
 
-      {/*
-        Switch-user badge.
-        On wide screens: fixed top-center (between title and theme picker).
-        On narrow screens (<480px): moves to top-LEFT so it never overlaps
-        the theme buttons on the right.
-      */}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .switch-badge {
@@ -133,6 +131,7 @@ export default function App() {
         }
       `}</style>
 
+      {/* Switch-user badge */}
       <button
         className="switch-badge"
         onClick={handleDisconnect}
@@ -170,6 +169,43 @@ export default function App() {
         )}
         {username || "demo"} · switch user
       </button>
+
+      {/* Backlink */}
+      <Backlink theme={currentTheme} />
     </div>
+  );
+}
+
+// ── Backlink ───────────────────────────────────────────────────────────────
+function Backlink({ theme }) {
+  return (
+    <a
+      href="https://www.natrajx.in"
+      target="_blank"
+      rel="noreferrer"
+      style={{
+        position: "fixed",
+        bottom: "0.6rem",
+        right: "0.75rem",
+        zIndex: 100,
+        fontSize: "0.55rem",
+        fontFamily: "'Courier New', monospace",
+        letterSpacing: "0.1em",
+        color: theme.muted,
+        textDecoration: "none",
+        opacity: 0.5,
+        transition: "opacity 0.15s, color 0.15s",
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.opacity = "1";
+        e.currentTarget.style.color = theme.accent;
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.opacity = "0.5";
+        e.currentTarget.style.color = theme.muted;
+      }}
+    >
+      ⬡ GitSkyline · by natrajx.in
+    </a>
   );
 }

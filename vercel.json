@@ -1,0 +1,20 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/contributions/:username",
+            "destination": "/api/contributions/:username"
+        },
+        {
+            "source": "/api/og/:username",
+            "destination": "/api/og/:username"
+        },
+        {
+            "source": "/:username.svg",
+            "destination": "/api/og/:username"
+        },
+        {
+            "source": "/:username",
+            "destination": "/?username=:username"
+        }
+    ]
+}

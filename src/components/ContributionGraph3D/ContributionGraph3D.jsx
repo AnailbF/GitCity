@@ -1,5 +1,5 @@
 /**
- * ContributionGraph3D.jsx
+ * ContributionGraph3D.jsx — GitSkyline
  *
  * Features:
  *  ✓ Time range filters: This Year / Last 12 Mo / 6 Mo / 3 Mo / Month / Week
@@ -12,44 +12,44 @@
 
 import { useState, useMemo } from "react";
 import { THEMES, DEFAULT_THEME } from "../../constants/themes";
-import { useContributionData }   from "../../hooks/useContributionData";
-import { useMousePosition }      from "../../hooks/useMousePosition";
-import { useMountAnimation }     from "../../hooks/useMountAnimation";
+import { useContributionData } from "../../hooks/useContributionData";
+import { useMousePosition } from "../../hooks/useMousePosition";
+import { useMountAnimation } from "../../hooks/useMountAnimation";
 
 import { IsometricGrid } from "./IsometricGrid";
-import { BirdsEyeGrid }  from "./BirdsEyeGrid";
-import { Tooltip }       from "./Tooltip";
-import { StatsBar }      from "./StatsBar";
-import { ThemePicker }   from "./ThemePicker";
-import { ViewToggle }    from "./ViewToggle";
-import { GraphLegend }   from "./GraphLegend";
+import { BirdsEyeGrid } from "./BirdsEyeGrid";
+import { Tooltip } from "./Tooltip";
+import { StatsBar } from "./StatsBar";
+import { ThemePicker } from "./ThemePicker";
+import { ViewToggle } from "./ViewToggle";
+import { GraphLegend } from "./GraphLegend";
 
 // ── Time filter helpers ───────────────────────────────────────────────────────
 const TIME_FILTERS = [
-  { key: "12m",   label: "Last 12 Mo" },
-  { key: "year",  label: "This Year"  },
-  { key: "6m",    label: "Last 6 Mo"  },
-  { key: "3m",    label: "Last 3 Mo"  },
+  { key: "12m", label: "Last 12 Mo" },
+  { key: "year", label: "This Year" },
+  { key: "6m", label: "Last 6 Mo" },
+  { key: "3m", label: "Last 3 Mo" },
   { key: "month", label: "This Month" },
-  { key: "week",  label: "This Week"  },
+  { key: "week", label: "This Week" },
 ];
 
 function getCutoff(range) {
   const today = new Date();
   switch (range) {
-    case "year":  return new Date(today.getFullYear(), 0, 1);
-    case "12m":   { const d = new Date(today); d.setFullYear(d.getFullYear() - 1); return d; }
-    case "6m":    { const d = new Date(today); d.setMonth(d.getMonth() - 6);       return d; }
-    case "3m":    { const d = new Date(today); d.setMonth(d.getMonth() - 3);       return d; }
+    case "year": return new Date(today.getFullYear(), 0, 1);
+    case "12m": { const d = new Date(today); d.setFullYear(d.getFullYear() - 1); return d; }
+    case "6m": { const d = new Date(today); d.setMonth(d.getMonth() - 6); return d; }
+    case "3m": { const d = new Date(today); d.setMonth(d.getMonth() - 3); return d; }
     case "month": return new Date(today.getFullYear(), today.getMonth(), 1);
-    case "week":  { const d = new Date(today); d.setDate(d.getDate() - d.getDay()); return d; }
-    default:      { const d = new Date(today); d.setFullYear(d.getFullYear() - 1); return d; }
+    case "week": { const d = new Date(today); d.setDate(d.getDate() - d.getDay()); return d; }
+    default: { const d = new Date(today); d.setFullYear(d.getFullYear() - 1); return d; }
   }
 }
 
 function applyFilter(cells, range) {
   const cutoffStr = getCutoff(range).toISOString().slice(0, 10);
-  const filtered  = cells.filter((c) => c.date >= cutoffStr);
+  const filtered = cells.filter((c) => c.date >= cutoffStr);
   if (!filtered.length) return filtered;
   const minWeek = Math.min(...filtered.map((c) => c.week));
   return filtered.map((c) => ({ ...c, week: c.week - minWeek }));
@@ -57,25 +57,25 @@ function applyFilter(cells, range) {
 
 function calcStats(cells) {
   if (!cells.length) return { total: 0, maxCount: 0, busiest: null, maxStreak: 0, curStreak: 0, activeDays: 0, avgPerDay: 0 };
-  const total    = cells.reduce((s, c) => s + c.count, 0);
+  const total = cells.reduce((s, c) => s + c.count, 0);
   const maxCount = Math.max(...cells.map((c) => c.count));
-  const busiest  = cells.find((c) => c.count === maxCount) ?? null;
+  const busiest = cells.find((c) => c.count === maxCount) ?? null;
   let maxStreak = 0, cur = 0;
   cells.forEach((c) => { if (c.count > 0) { cur++; if (cur > maxStreak) maxStreak = cur; } else cur = 0; });
   let curStreak = 0;
   for (let i = cells.length - 1; i >= 0; i--) { if (cells[i].count > 0) curStreak++; else break; }
   const activeDays = cells.filter((c) => c.count > 0).length;
-  const avgPerDay  = activeDays ? Math.round(total / activeDays) : 0;
+  const avgPerDay = activeDays ? Math.round(total / activeDays) : 0;
   return { total, maxCount, busiest, maxStreak, curStreak, activeDays, avgPerDay };
 }
 
 function calcMonthLabels(cells) {
   const seenKey = new Set(), labels = [];
-  const byWeek  = {};
+  const byWeek = {};
   cells.forEach((c) => { if (!byWeek[c.week]) byWeek[c.week] = []; byWeek[c.week].push(c); });
   Object.keys(byWeek).map(Number).sort((a, b) => a - b).forEach((week) => {
     const sun = byWeek[week].find((c) => c.day === 0) || byWeek[week][0];
-    const d   = new Date(sun.date);
+    const d = new Date(sun.date);
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     if (!seenKey.has(key)) {
       seenKey.add(key);
@@ -89,15 +89,15 @@ function calcMonthLabels(cells) {
 export function ContributionGraph3D({
   contributions: rawContributions = null,
   themeName = DEFAULT_THEME,
-  title = "Code Skyline",
+  title = "GitSkyline",
 }) {
   const [activeTheme, setActiveTheme] = useState(themeName);
-  const [view,        setView]        = useState("iso");
-  const [timeRange,   setTimeRange]   = useState("12m");
+  const [view, setView] = useState("iso");
+  const [timeRange, setTimeRange] = useState("12m");
   const [hoveredCell, setHoveredCell] = useState(null);
 
-  const theme   = THEMES[activeTheme] ?? THEMES[DEFAULT_THEME];
-  const mouse   = useMousePosition();
+  const theme = THEMES[activeTheme] ?? THEMES[DEFAULT_THEME];
+  const mouse = useMousePosition();
   const mounted = useMountAnimation(`${activeTheme}-${view}-${timeRange}`);
 
   // Raw full-year data
@@ -115,9 +115,9 @@ export function ContributionGraph3D({
     [filteredCells]
   );
 
-  const stats       = useMemo(() => calcStats(filteredCells),      [filteredCells]);
+  const stats = useMemo(() => calcStats(filteredCells), [filteredCells]);
   const monthLabels = useMemo(() => calcMonthLabels(filteredCells), [filteredCells]);
-  const allStats    = useMemo(() => calcStats(allCells),            [allCells]);
+  const allStats = useMemo(() => calcStats(allCells), [allCells]);
 
   const GridComponent = view === "iso" ? IsometricGrid : BirdsEyeGrid;
 
@@ -155,7 +155,7 @@ export function ContributionGraph3D({
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
           <div>
             <div style={{ fontSize: "0.55rem", letterSpacing: "0.2em", color: theme.muted, textTransform: "uppercase", marginBottom: "0.2rem" }}>
-              ◈ 3D Contribution Skyline
+              ◈ GitSkyline · gitskyline.natrajx.in
             </div>
             <h1 style={{
               margin: 0, fontSize: "1.75rem", fontWeight: 900, letterSpacing: "-0.03em",
@@ -186,13 +186,13 @@ export function ContributionGraph3D({
         borderRadius: "14px",
         backdropFilter: "blur(14px)",
         boxShadow: `0 0 40px ${theme.glow}05, inset 0 1px 0 ${theme.border}60`,
-        flex: 1,             // grow to fill remaining height
-        minHeight: 0,        // allow shrinking
+        flex: 1,
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
       }}>
 
-        {/* Panel toolbar — fixed height */}
+        {/* Panel toolbar */}
         <div style={{
           flexShrink: 0,
           display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -231,12 +231,12 @@ export function ContributionGraph3D({
           </div>
         </div>
 
-        {/* SVG area — flex-grows to fill remaining panel height */}
+        {/* SVG area */}
         <div style={{
           flex: 1,
-          minHeight: 0,        // critical: lets flex child shrink below content size
+          minHeight: 0,
           padding: "0.4rem 0.75rem 0.25rem",
-          overflow: "hidden",  // no scroll — SVG scales to fit
+          overflow: "hidden",
         }}>
           <GridComponent
             sortedCells={sortedCells}
@@ -249,7 +249,7 @@ export function ContributionGraph3D({
           />
         </div>
 
-        {/* Legend — fixed height */}
+        {/* Legend */}
         <div style={{ flexShrink: 0, padding: "0 0.85rem 0.5rem" }}>
           <GraphLegend theme={theme} />
         </div>

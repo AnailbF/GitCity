@@ -1,5 +1,5 @@
 /**
- * GitHubConnect.jsx
+ * GitHubConnect.jsx — GitSkyline
  * Login screen — username only, no token needed.
  */
 
@@ -83,7 +83,7 @@ export function GitHubConnect({ onConnect, loading, error, theme }) {
             fontSize: "1.7rem", fontWeight: 900, color: theme.accent,
             textShadow: `0 0 24px ${theme.glow}60`, marginBottom: "0.4rem",
           }}>
-            GitContra
+            GitSkyline
           </div>
           <div style={{ color: theme.muted, fontSize: "0.75rem" }}>
             Enter any GitHub username to visualise their skyline

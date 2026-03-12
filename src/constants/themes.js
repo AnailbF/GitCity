@@ -1,10 +1,6 @@
 /**
- * themes.js
- * All colour themes for the 3D Contribution Graph.
- * Each theme controls: backgrounds, borders, text, glow,
- * 5-level contribution colours, and window colours.
- *
- * Add your own by following the same shape.
+ * themes.js — GitSkyline
+ * Themes: Matrix, Noir, Aurora, Ocean, Gold, Ice
  */
 
 export const THEMES = {
@@ -21,6 +17,7 @@ export const THEMES = {
     winLit: "#ccffcc",
     winDark: "#1a3320",
   },
+
   noir: {
     name: "Noir",
     bg: "#04080f",
@@ -34,19 +31,7 @@ export const THEMES = {
     winLit: "#ffe066",
     winDark: "#1a2e50",
   },
-  ember: {
-    name: "Ember",
-    bg: "#0f0500",
-    surface: "#200b00",
-    border: "#4a1a00",
-    text: "#ffe5cc",
-    muted: "#7a3a15",
-    accent: "#ff6a00",
-    glow: "#ff4500",
-    levels: ["#200b00", "#5c1a00", "#a03000", "#e05500", "#ff6a00"],
-    winLit: "#ffcc44",
-    winDark: "#3a1000",
-  },
+
   aurora: {
     name: "Aurora",
     bg: "#030710",
@@ -60,18 +45,47 @@ export const THEMES = {
     winLit: "#e0aaff",
     winDark: "#1a0a40",
   },
-  sakura: {
-    name: "Sakura",
-    bg: "#0f060a",
-    surface: "#1a0c12",
-    border: "#3d1a28",
-    text: "#ffe0ee",
-    muted: "#7a3a55",
-    accent: "#ff79c6",
-    glow: "#ff79c6",
-    levels: ["#1a0c12", "#4d1a30", "#8b2252", "#cc3380", "#ff79c6"],
-    winLit: "#ffccee",
-    winDark: "#3d1a28",
+
+  ocean: {
+    name: "Ocean",
+    bg: "#020c14",
+    surface: "#061828",
+    border: "#0d3050",
+    text: "#cceeff",
+    muted: "#2a6080",
+    accent: "#00b4d8",
+    glow: "#00b4d8",
+    levels: ["#061828", "#0a3060", "#0a6090", "#0090c0", "#00b4d8"],
+    winLit: "#90e0ff",
+    winDark: "#0d2a44",
+  },
+
+  gold: {
+    name: "Gold",
+    bg: "#0c0900",
+    surface: "#1a1200",
+    border: "#3d2e00",
+    text: "#fff3cc",
+    muted: "#7a6020",
+    accent: "#ffd700",
+    glow: "#ffd700",
+    levels: ["#1a1200", "#4a3000", "#806000", "#c09000", "#ffd700"],
+    winLit: "#fff0a0",
+    winDark: "#3d2e00",
+  },
+
+  ice: {
+    name: "Ice",
+    bg: "#060810",
+    surface: "#0d1220",
+    border: "#1e2e50",
+    text: "#e8f0ff",
+    muted: "#5060a0",
+    accent: "#a8c8ff",
+    glow: "#a8c8ff",
+    levels: ["#0d1220", "#1a2a50", "#2a4a90", "#4a70d0", "#a8c8ff"],
+    winLit: "#ffffff",
+    winDark: "#1e2e50",
   },
 };
 

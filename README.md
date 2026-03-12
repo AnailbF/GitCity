@@ -26,9 +26,15 @@ Browse all your years, switch themes, compare streaks — built entirely with Re
 
 ## See it live — rishabhbhartiya's Skyline
 
-[![GitCity Skyline](https://gitcity.natrajx.in/rishabhbhartiya.svg)](https://gitcity.natrajx.in/rishabhbhartiya)
+[![GitCity Skyline](./screenshots/demo.png)](https://gitcity.natrajx.in/rishabhbhartiya)
 
 View the full interactive skyline → [gitcity.natrajx.in/rishabhbhartiya](https://gitcity.natrajx.in/rishabhbhartiya)
+
+Once deployed, replace the image above with the live SVG embed:
+
+```md
+[![GitCity Skyline](https://gitcity.natrajx.in/rishabhbhartiya.svg)](https://gitcity.natrajx.in/rishabhbhartiya)
+```
 
 ---
 

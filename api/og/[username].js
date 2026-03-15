@@ -128,10 +128,24 @@ function buildSVG(username, data, theme) {
 
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
 
     if (req.method === "OPTIONS") return res.status(200).end();
 
-    const { username, theme = "matrix" } = req.query;
+    // Username comes from:
+    // 1. Path param when routed via /:username.svg → /api/og/:username  (req.query.username)
+    // 2. Direct call to /api/og/torvalds (Vercel sets req.query.username from [username].js filename)
+    // 3. Fallback: parse from req.url path
+    let username = req.query.username || req.query.user || "";
+    if (!username) {
+        // Parse from URL path e.g. /api/og/torvalds
+        const parts = (req.url || "").split("?")[0].split("/").filter(Boolean);
+        username = parts[parts.length - 1] || "";
+        // Strip .svg if present
+        username = username.replace(/\.svg$/, "");
+    }
+    const theme = req.query.theme || "matrix";
+
     if (!username) return res.status(400).send("Username required");
 
     const token = process.env.GITHUB_TOKEN;

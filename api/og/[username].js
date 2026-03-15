@@ -26,15 +26,21 @@ const THEMES = {
 };
 
 async function getContributions(username, token) {
-    // Last 365 days only for the SVG (fast)
+    // Strip any accidental .svg suffix
+    const cleanUser = username.replace(/\.svg$/i, "").trim();
+
+    // GitHub requires from to be within the user's account lifetime
+    // Use a safe date 1 year ago in strict ISO format
     const from = new Date();
     from.setFullYear(from.getFullYear() - 1);
+    from.setHours(0, 0, 0, 0);
+    const fromISO = from.toISOString();
 
     const query = `
-    query($login: String!, $from: DateTime!) {
+    query($login: String!) {
       user(login: $login) {
         name
-        contributionsCollection(from: $from) {
+        contributionsCollection {
           contributionCalendar {
             totalContributions
             weeks {
@@ -48,21 +54,27 @@ async function getContributions(username, token) {
 
     const res = await fetch(GITHUB_GRAPHQL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `bearer ${token}` },
-        body: JSON.stringify({ query, variables: { login: username, from: from.toISOString() } }),
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `bearer ${token}`,
+            "User-Agent": "GitCity/1.0",
+        },
+        body: JSON.stringify({ query, variables: { login: cleanUser } }),
     });
+
+    if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
 
     const json = await res.json();
     if (json.errors) throw new Error(json.errors[0]?.message ?? "GraphQL error");
     const user = json.data?.user;
-    if (!user) throw new Error(`User "${username}" not found`);
+    if (!user) throw new Error(`User not found: ${cleanUser}`);
 
     const days = user.contributionsCollection.contributionCalendar.weeks
         .flatMap(w => w.contributionDays)
         .map(d => ({ date: d.date, count: d.contributionCount }));
 
     return {
-        name: user.name || username,
+        name: user.name || cleanUser,
         total: user.contributionsCollection.contributionCalendar.totalContributions,
         days,
     };
@@ -136,17 +148,20 @@ export default async function handler(req, res) {
     // 1. Path param when routed via /:username.svg → /api/og/:username  (req.query.username)
     // 2. Direct call to /api/og/torvalds (Vercel sets req.query.username from [username].js filename)
     // 3. Fallback: parse from req.url path
+    // Extract username — strip .svg, decode URI, trim whitespace
     let username = req.query.username || req.query.user || "";
     if (!username) {
-        // Parse from URL path e.g. /api/og/torvalds
         const parts = (req.url || "").split("?")[0].split("/").filter(Boolean);
         username = parts[parts.length - 1] || "";
-        // Strip .svg if present
-        username = username.replace(/\.svg$/, "");
     }
-    const theme = req.query.theme || "matrix";
+    username = decodeURIComponent(username).replace(/\.svg$/i, "").trim();
+    const theme = (req.query.theme || "matrix").trim();
 
     if (!username) return res.status(400).send("Username required");
+    // Validate — GitHub usernames: alphanumeric + hyphens, max 39 chars
+    if (!/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$/.test(username)) {
+        return res.status(400).send(`Invalid GitHub username: ${username}`);
+    }
 
     const token = process.env.GITHUB_TOKEN;
     if (!token) return res.status(500).send("GITHUB_TOKEN not configured");

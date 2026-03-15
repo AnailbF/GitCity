@@ -22,12 +22,12 @@
 Drop this into any GitHub README, portfolio, or blog post:
 
 ```markdown
-[![My GitCity Skyline](https://gitcity.natrajx.in/YOUR_USERNAME.svg)](https://gitcity.natrajx.in/YOUR_USERNAME)
+[![My GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=YOUR_USERNAME)](https://gitcity.natrajx.in/YOUR_USERNAME)
 ```
 
 **rishabhbhartiya's skyline — rendered live from the API:-**
 
-[![GitCity Skyline](https://gitcity.natrajx.in/rishabhbhartiya.svg)](https://gitcity.natrajx.in/rishabhbhartiya)
+[![GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=rishabhbhartiya)](https://gitcity.natrajx.in/rishabhbhartiya)
 
 > Every building = one day of commits. The taller the tower, the more you shipped.
 
@@ -69,13 +69,13 @@ The SVG embed API is **dynamic** — it re-renders from live GitHub data on each
 ### Basic embed
 
 ```markdown
-![GitCity](https://gitcity.natrajx.in/YOUR_USERNAME.svg)
+![GitCity](https://gitcity.natrajx.in/api/svg?u=YOUR_USERNAME)
 ```
 
 ### With theme
 
 ```markdown
-![GitCity Noir](https://gitcity.natrajx.in/YOUR_USERNAME.svg?theme=noir)
+![GitCity Noir](https://gitcity.natrajx.in/api/svg?u=YOUR_USERNAME&theme=noir)
 ```
 
 Available themes: `matrix` · `noir` · `aurora` · `ocean` · `gold` · `ice`
@@ -84,7 +84,7 @@ Available themes: `matrix` · `noir` · `aurora` · `ocean` · `gold` · `ice`
 
 ```html
 <a href="https://gitcity.natrajx.in/YOUR_USERNAME">
-  <img src="https://gitcity.natrajx.in/YOUR_USERNAME.svg?theme=aurora"
+  <img src="https://gitcity.natrajx.in/api/svg?u=YOUR_USERNAME&theme=aurora"
        alt="My GitHub Skyline" width="100%" />
 </a>
 ```

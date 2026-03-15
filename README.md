@@ -31,6 +31,10 @@ Drop this into any GitHub README, portfolio, or blog post:
 
 > Every building = one day of commits. The taller the tower, the more you shipped.
 
+**random's skyline — rendered live from the API:-**
+
+[![GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=urpreetam)](https://gitcity.natrajx.in/urpreetam)
+
 ---
 
 ## ✨ What is GitCity?

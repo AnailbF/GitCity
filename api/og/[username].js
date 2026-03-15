@@ -1,20 +1,16 @@
 /**
- * /api/og/[username].js — GitSkyline
+ * /api/og/[username].js
  *
- * Returns a static SVG skyline for README / portfolio embedding.
+ * Returns an SVG contribution heatmap for README embedding.
+ * Uses public GitHub contributions API — no token needed.
+ * Falls back to GitHub GraphQL if GITHUB_TOKEN is set.
  *
- * Usage:
- *   GET /api/og/torvalds          → SVG (default matrix theme)
- *   GET /api/og/torvalds?theme=noir  → SVG with noir theme
- *
- * Embed in README:
- *   ![My Skyline](https://gitcity.natrajx.in/api/og/YOUR_USERNAME)
- *
- * Embed in HTML:
- *   <img src="https://gitcity.natrajx.in/api/og/YOUR_USERNAME?theme=ocean" />
+ * Routes:
+ *   GET /rishabhbhartiya.svg          → default matrix theme
+ *   GET /rishabhbhartiya.svg?theme=noir
+ *   GET /api/og/rishabhbhartiya
+ *   GET /api/og/rishabhbhartiya?theme=aurora
  */
-
-const GITHUB_GRAPHQL = "https://api.github.com/graphql";
 
 const THEMES = {
     matrix: { bg: "#060d06", surface: "#0c1a0c", accent: "#00ff41", muted: "#3d6b3d", text: "#b0ffb0", levels: ["#0c1a0c", "#0e4020", "#1a7535", "#27ae60", "#00ff41"] },
@@ -25,163 +21,211 @@ const THEMES = {
     ice: { bg: "#060810", surface: "#0d1220", accent: "#a8c8ff", muted: "#5060a0", text: "#e8f0ff", levels: ["#0d1220", "#1a2a50", "#2a4a90", "#4a70d0", "#a8c8ff"] },
 };
 
-async function getContributions(username, token) {
-    // Strip any accidental .svg suffix
-    const cleanUser = username.replace(/\.svg$/i, "").trim();
+// ── Fetch via public proxy (no token needed) ──────────────────────────────────
+async function fetchViaProxy(username) {
+    const url = `https://github-contributions-api.jogruber.de/v4/${username}?y=last`;
+    const res = await fetch(url, { headers: { "User-Agent": "GitCity-OG/1.0" } });
+    if (!res.ok) throw new Error(`Proxy returned ${res.status}`);
+    const json = await res.json();
+    // Response: { contributions: [{ date, count }], total: { ... } }
+    const contributions = json.contributions;
+    if (!Array.isArray(contributions) || contributions.length === 0) {
+        throw new Error("No contributions from proxy");
+    }
+    const days = contributions.map(d => ({ date: d.date, count: d.count ?? 0 }));
+    const total = days.reduce((s, d) => s + d.count, 0);
+    return { name: username, total, days };
+}
 
-    // GitHub requires from to be within the user's account lifetime
-    // Use a safe date 1 year ago in strict ISO format
-    const from = new Date();
-    from.setFullYear(from.getFullYear() - 1);
-    from.setHours(0, 0, 0, 0);
-    const fromISO = from.toISOString();
+// ── Fetch via GitHub GraphQL (needs token) ────────────────────────────────────
+async function fetchViaGraphQL(username, token) {
+    const today = new Date();
+    const from = `${today.getFullYear()}-01-01T00:00:00Z`;
+    const to = today.toISOString().slice(0, 19) + "Z";
 
     const query = `
-    query($login: String!) {
+    query($login: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $login) {
         name
-        contributionsCollection {
+        contributionsCollection(from: $from, to: $to) {
           contributionCalendar {
             totalContributions
-            weeks {
-              contributionDays { date contributionCount }
-            }
+            weeks { contributionDays { date contributionCount } }
           }
         }
       }
     }
   `;
 
-    const res = await fetch(GITHUB_GRAPHQL, {
+    const res = await fetch("https://api.github.com/graphql", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `bearer ${token}`,
-            "User-Agent": "GitCity/1.0",
+            "User-Agent": "GitCity-OG/1.0",
         },
-        body: JSON.stringify({ query, variables: { login: cleanUser } }),
+        body: JSON.stringify({ query, variables: { login: username, from, to } }),
     });
 
-    if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
-
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
     const json = await res.json();
-    if (json.errors) throw new Error(json.errors[0]?.message ?? "GraphQL error");
+    if (json.errors) throw new Error(json.errors[0]?.message || "GraphQL error");
+
     const user = json.data?.user;
-    if (!user) throw new Error(`User not found: ${cleanUser}`);
+    if (!user) throw new Error(`User not found: ${username}`);
 
     const days = user.contributionsCollection.contributionCalendar.weeks
         .flatMap(w => w.contributionDays)
         .map(d => ({ date: d.date, count: d.contributionCount }));
 
     return {
-        name: user.name || cleanUser,
+        name: user.name || username,
         total: user.contributionsCollection.contributionCalendar.totalContributions,
         days,
     };
 }
 
-function buildSVG(username, data, theme) {
+// ── Build SVG ─────────────────────────────────────────────────────────────────
+function buildSVG(username, data, themeName) {
     const { days, total, name } = data;
-    const t = THEMES[theme] || THEMES.matrix;
+    const t = THEMES[themeName] || THEMES.matrix;
 
-    // Grid layout
-    const CELL = 11;
-    const GAP = 2;
-    const COLS = 53;
-    const ROWS = 7;
-    const PAD_X = 12;
-    const PAD_Y = 40;
+    const CELL = 11, GAP = 2, ROWS = 7;
+    const PAD_X = 14, PAD_Y = 44;
+
+    // Group into week columns
+    const weeks = [];
+    let week = new Array(7).fill(null);
+    days.forEach(d => {
+        const dow = new Date(d.date + "T12:00:00Z").getUTCDay();
+        week[dow] = d;
+        if (dow === 6) { weeks.push(week); week = new Array(7).fill(null); }
+    });
+    if (week.some(Boolean)) weeks.push(week);
+
+    const COLS = weeks.length;
     const W = PAD_X * 2 + COLS * (CELL + GAP);
-    const H = PAD_Y + ROWS * (CELL + GAP) + 30;
+    const H = PAD_Y + ROWS * (CELL + GAP) + 32;
+    const maxC = Math.max(...days.map(d => d.count), 1);
 
-    const maxCount = Math.max(...days.map(d => d.count), 1);
-
-    function levelFor(count) {
-        if (count === 0) return 0;
-        const ratio = count / maxCount;
-        if (ratio < 0.25) return 1;
-        if (ratio < 0.50) return 2;
-        if (ratio < 0.75) return 3;
-        return 4;
+    function level(count) {
+        if (!count) return 0;
+        const r = count / maxC;
+        return r < 0.25 ? 1 : r < 0.5 ? 2 : r < 0.75 ? 3 : 4;
     }
 
-    // Build week columns
-    const weeks = [];
-    let week = [];
-    days.forEach((d, i) => {
-        const dow = new Date(d.date).getDay();
-        if (dow === 0 && week.length) { weeks.push(week); week = []; }
-        week.push(d);
+    // Month labels
+    let monthLabels = "";
+    let lastMonth = -1;
+    weeks.forEach((w, wi) => {
+        const firstDay = w.find(Boolean);
+        if (!firstDay) return;
+        const d = new Date(firstDay.date + "T12:00:00Z");
+        const m = d.getUTCMonth();
+        if (m !== lastMonth) {
+            lastMonth = m;
+            const label = d.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+            const x = PAD_X + wi * (CELL + GAP);
+            monthLabels += `<text x="${x}" y="16" font-family="monospace" font-size="9" fill="${t.muted}">${label}</text>`;
+        }
     });
-    if (week.length) weeks.push(week);
 
-    // Generate cells
+    // Day cells
     let cells = "";
     weeks.forEach((w, wi) => {
-        w.forEach((d) => {
-            const dow = new Date(d.date).getDay();
+        w.forEach((d, dow) => {
             const x = PAD_X + wi * (CELL + GAP);
             const y = PAD_Y + dow * (CELL + GAP);
-            const color = t.levels[levelFor(d.count)];
-            cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${color}"/>`;
+            const color = d ? t.levels[level(d.count)] : t.levels[0];
+            const title = d ? `${d.count} contributions on ${d.date}` : "";
+            cells += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="2" fill="${color}">${title ? `<title>${title}</title>` : ""}</rect>`;
         });
     });
 
+    // Legend
+    const lx = PAD_X;
+    const ly = H - 18;
+    const legend = [
+        `<text x="${lx}" y="${ly + 8}" font-family="monospace" font-size="8" fill="${t.muted}">Less</text>`,
+        ...[0, 1, 2, 3, 4].map((l, i) =>
+            `<rect x="${lx + 28 + i * 14}" y="${ly}" width="${CELL}" height="${CELL}" rx="2" fill="${t.levels[l]}"/>`
+        ),
+        `<text x="${lx + 105}" y="${ly + 8}" font-family="monospace" font-size="8" fill="${t.muted}">More</text>`,
+        // Right-aligned credit
+        `<text x="${W - PAD_X}" y="${ly + 8}" text-anchor="end" font-family="monospace" font-size="8" fill="${t.muted}">gitcity.natrajx.in</text>`,
+    ].join("");
+
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" rx="10" fill="${t.bg}"/>
-  <text x="${PAD_X}" y="18" font-family="monospace" font-size="11" font-weight="bold" fill="${t.accent}">${name || username}'s GitSkyline</text>
-  <text x="${PAD_X}" y="32" font-family="monospace" font-size="9" fill="${t.muted}">${total.toLocaleString()} contributions in the last year · gitcity.natrajx.in</text>
+  <!-- Header -->
+  <text x="${PAD_X}" y="${PAD_Y - 24}" font-family="monospace" font-size="12" font-weight="bold" fill="${t.accent}">${escXml(name || username)}</text>
+  <text x="${PAD_X + 6 + (name || username).length * 7.5}" y="${PAD_Y - 24}" font-family="monospace" font-size="10" fill="${t.muted}">'s GitCity Skyline</text>
+  <text x="${PAD_X}" y="${PAD_Y - 10}" font-family="monospace" font-size="9" fill="${t.muted}">${total.toLocaleString()} contributions in the last year</text>
+  <!-- Month labels -->
+  ${monthLabels}
+  <!-- Cells -->
   ${cells}
-  <text x="${PAD_X}" y="${H - 8}" font-family="monospace" font-size="8" fill="${t.muted}">Less</text>
-  ${[0, 1, 2, 3, 4].map((l, i) => `<rect x="${PAD_X + 30 + i * 13}" y="${H - 16}" width="${CELL}" height="${CELL}" rx="2" fill="${t.levels[l]}"/>`).join("")}
-  <text x="${PAD_X + 105}" y="${H - 8}" font-family="monospace" font-size="8" fill="${t.muted}">More</text>
+  <!-- Legend -->
+  ${legend}
 </svg>`;
 }
 
+function escXml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function errorSVG(msg) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="72" viewBox="0 0 480 72">
+  <rect width="480" height="72" rx="8" fill="#0c0c14"/>
+  <text x="16" y="30" font-family="monospace" font-size="13" font-weight="bold" fill="#ff6b6b">⚠ GitCity — could not load skyline</text>
+  <text x="16" y="52" font-family="monospace" font-size="10" fill="#666688">${escXml(msg)}</text>
+</svg>`;
+}
+
+// ── Handler ───────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-
     if (req.method === "OPTIONS") return res.status(200).end();
 
-    // Username comes from:
-    // 1. Path param when routed via /:username.svg → /api/og/:username  (req.query.username)
-    // 2. Direct call to /api/og/torvalds (Vercel sets req.query.username from [username].js filename)
-    // 3. Fallback: parse from req.url path
-    // Extract username — strip .svg, decode URI, trim whitespace
-    let username = req.query.username || req.query.user || "";
+    // Parse username from query param (set by Vercel from [username].js)
+    // or fall back to URL path parsing
+    let username = (req.query.username || "").trim();
     if (!username) {
         const parts = (req.url || "").split("?")[0].split("/").filter(Boolean);
         username = parts[parts.length - 1] || "";
     }
     username = decodeURIComponent(username).replace(/\.svg$/i, "").trim();
-    const theme = (req.query.theme || "matrix").trim();
 
-    if (!username) return res.status(400).send("Username required");
-    // Validate — GitHub usernames: alphanumeric + hyphens, max 39 chars
-    if (!/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$/.test(username)) {
-        return res.status(400).send(`Invalid GitHub username: ${username}`);
+    const theme = (req.query.theme || "matrix").trim().toLowerCase();
+
+    // Validate username format
+    if (!username || !/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}$/.test(username)) {
+        res.setHeader("Content-Type", "image/svg+xml");
+        return res.status(400).send(errorSVG(`Invalid username: "${username}"`));
     }
 
-    const token = process.env.GITHUB_TOKEN;
-    if (!token) return res.status(500).send("GITHUB_TOKEN not configured");
-
     try {
-        const data = await getContributions(username, token);
-        const svg = buildSVG(username, data, theme);
+        let data;
 
+        // Try public proxy first (no token needed — always works)
+        try {
+            data = await fetchViaProxy(username);
+        } catch (proxyErr) {
+            // Fall back to GitHub GraphQL if token available
+            const token = process.env.GITHUB_TOKEN;
+            if (!token) throw new Error(`Could not fetch contributions for "${username}". Try again later.`);
+            data = await fetchViaGraphQL(username, token);
+        }
+
+        const svg = buildSVG(username, data, theme);
         res.setHeader("Content-Type", "image/svg+xml");
         res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
         return res.status(200).send(svg);
 
     } catch (err) {
-        // Return error as SVG so <img> tags don't show broken image
-        const errSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="60" viewBox="0 0 400 60">
-  <rect width="400" height="60" rx="8" fill="#0c0c0c"/>
-  <text x="16" y="28" font-family="monospace" font-size="12" fill="#ff6b6b">⚠ GitSkyline</text>
-  <text x="16" y="46" font-family="monospace" font-size="10" fill="#666">${err.message}</text>
-</svg>`;
         res.setHeader("Content-Type", "image/svg+xml");
-        return res.status(200).send(errSvg);
+        res.setHeader("Cache-Control", "no-store");
+        return res.status(200).send(errorSVG(err.message));
     }
 }

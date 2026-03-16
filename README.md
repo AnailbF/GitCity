@@ -3,8 +3,9 @@
 ![Header](https://readmeforge.natrajx.in/api/header?name=GITCITY&title=Your+GitHub+contribution+history+%E2%80%94+reimagined+as+a+living+3D+city&tagline=&metal=vintage-green&style=cyber&height=215&theme=dark)
 
 <a href="https://gitcity.natrajx.in">
-  <img src="./screenshots/3dcity.gif" alt="GitCity — GitHub Contributions as a 3D City Skyline" width="100%" />
+  <img src="./screenshots/3dcity.gif" alt="GitCity — GitHub Contributions as a 3D City Skyline" width="90%" />
 </a>
+
 
 
 [![LIVE DEMO](https://readmeforge.natrajx.in/api/badge?label=LIVE+DEMO&metal=vintage-green&shape=rounded&theme=dark&value=https%3A%2F%2Fgitcity.natrajx.in)](https://gitcity.natrajx.in)
@@ -12,9 +13,9 @@
 
 </div>
 
-![Divider](https://readmeforge.natrajx.in/api/divider?metal=vintage-green&style=dashed&width=1184&height=20)
-
-![See it live- Your Skyline in one Line](https://readmeforge.natrajx.in/api/text-anim?text=See+it+live-+Your+Skyline+in+one+Line&effect=explode&metal=material-green&width=597&size=32&theme=dark)
+<p align="center">
+  <img src="https://readmeforge.natrajx.in/api/text-anim?text=See+it+live-+Your+Skyline+in+one+Line&effect=explode&metal=material-green&width=597&size=32&theme=dark" />
+</p>
 
 Drop this into any GitHub README, portfolio, or blog post:
 
@@ -22,15 +23,23 @@ Drop this into any GitHub README, portfolio, or blog post:
 [![My GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=YOUR_USERNAME)](https://gitcity.natrajx.in/YOUR_USERNAME)
 ```
 
-**rishabhbhartiya's skyline — rendered live from the API:**
+<p align="center">
+  <img 
+    src="https://readmeforge.natrajx.in/api/text-anim?text=Every+building+%3D+one+day+of+commits.+The+taller+the+tower%2C+the+more+you+shipped.&effect=typewriter&metal=material-greenS D3&width=896&size=21&theme=dark"
+    alt="Every building = one day of commits. The taller the tower, the more you shipped."
+    width="1000"
+  />
+</p>
 
-[![GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=rishabhbhartiya)](https://gitcity.natrajx.in/rishabhbhartiya)
-
-> Every building = one day of commits. The taller the tower, the more you shipped.
-
-**random's skyline — rendered live from the API:-**
-
-[![GitCity Skyline](https://gitcity.natrajx.in/api/svg?u=urpreetam)](https://gitcity.natrajx.in/urpreetam)
+<p align="center">
+  <a href="https://gitcity.natrajx.in/rishabhbhartiya">
+    <img 
+      src="https://gitcity.natrajx.in/api/svg?u=rishabhbhartiya"
+      alt="GitCity Skyline"
+      width="1000"
+    />
+  </a>
+</p>
 
 ---
 
@@ -38,11 +47,11 @@ Drop this into any GitHub README, portfolio, or blog post:
 
 GitCity fetches your **entire GitHub contribution history** via the GitHub GraphQL API and renders it as:
 
-| View | Description |
-|------|-------------|
-| **⬡ 3D Skyline** | Isometric SVG city — buildings grow with commit count |
-| **🏎️ City Simulation** | Drive a Three.js city built from your real commit data |
-| **⊞ Bird's Eye** | Classic contribution heatmap, reimagined |
+<p align="center">
+  <img src="https://readmeforge.natrajx.in/api/card-glass?title=&value=3D+SKYLINE&subtitle=&icon=%F0%9F%8F%99&glassTheme=dark&metal=electric&width=300&height=141" width="300" style="margin:10px;" />
+  <img src="https://readmeforge.natrajx.in/api/card-glass?title=&value=SIMULATION&subtitle=&icon=%F0%9F%8E%AE&glassTheme=dark&metal=electric&width=300&height=141" width="300" style="margin:10px;" />
+  <img src="https://readmeforge.natrajx.in/api/card-glass?title=&value=BIRD%27S+EYE&subtitle=&icon=%F0%9F%A7%A9&glassTheme=dark&metal=electric&width=300&height=141" width="300" style="margin:10px;" />
+</p>
 
 No personal access token required. Enter your username and go.
 
@@ -136,6 +145,9 @@ vercel --prod
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GITHUB_TOKEN` | Yes | GitHub Personal Access Token (read:user scope) |
+
+
+![GITHUB_TOKEN](https://readmeforge.natrajx.in/api/card-glass?title=GITHUB_TOKEN&value=%E2%9C%93&subtitle=GitHub+Personal+Access+Token+&icon=%E2%97%88&glassTheme=dark&metal=electric&width=220&height=170)
 
 ---
 

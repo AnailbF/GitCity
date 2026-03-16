@@ -55,6 +55,12 @@ GitCity fetches your **entire GitHub contribution history** via the GitHub Graph
 
 No personal access token required. Enter your username and go.
 
+
+
+<a href="https://gitcity.natrajx.in">
+  <img src="./screenshots/cardriving.gif" alt="GitCity — GitHub Contributions as a 3D City Skyline" width="90%" />
+</a>
+
 ---
 
 ## 🎨 Themes

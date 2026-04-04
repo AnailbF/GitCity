@@ -1,12 +1,10 @@
 # GitCity vs thegitcity.com — They Are Completely Different Products
 
-> This document exists because people keep comparing these two projects.
-> They share a similar name but solve **entirely different problems**.
+> **A note on origins:** I discovered thegitcity.com by Samuel Rizzon while GitCity was taking shape, and it was genuinely impressive. But the more I looked at it, the more I realised I wanted to build something different — a personal tool, not a social network. The concept of "GitHub as a city" also isn't new (honzaap's GithubCity predates both). What GitCity does with your *own* contribution history, driveable simulation, and README embeds is something neither project does. This document exists to make that distinction clear.
 
 ---
 
 ## What thegitcity.com does
-
 - Every GitHub **user** becomes **one building** in a shared global city
 - Building height = total contribution count of that user
 - It's a **social network** — you explore other developers' buildings
@@ -63,6 +61,12 @@ GitCity visualises **your own contribution history** across **three completely d
 **GitCity** = your entire contribution history *becomes* a city that only you live in — and you can drive through it.
 
 Same name, completely different concept. One is a social network. The other is a personal developer tool.
+
+---
+
+## Prior art — this concept is older than both projects
+
+It's worth noting that the idea of visualising GitHub contributions as a 3D city isn't new to either project. [honzaap's GithubCity](https://honzaap.github.io/GithubCity/) did this years before both GitCity and thegitcity.com. The concept is an open idea that multiple developers have explored independently, each with a different take. GitCity's take is: personal, embeddable, driveable, and free.
 
 ---
 

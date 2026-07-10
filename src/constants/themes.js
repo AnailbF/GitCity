@@ -2,6 +2,36 @@
  * themes.js — GitSkyline
  */
 
+const pinkNight = {
+  name: 'Pink (Night)',
+  bg: '#12040c',
+  surface: '#2a0818',
+  border: '#3d0a22',
+  text: '#ff8fbd',
+  muted: '#c2185b',
+  accent: '#ff007a',
+  glow: '#ff007a',
+  levels: ['#2a0818', '#3d0a22', '#c2185b', '#ff1493', '#ff007a'],
+  winLit: '#ff8fbd',
+  winDark: '#1a0510',
+};
+
+const pinkDay = {
+  name: 'Pink (Day)',
+  bg: '#fff0f6',
+  surface: '#f7c9dd',
+  border: '#ffd6e8',
+  text: '#c2185b',
+  muted: '#ffb8d9',
+  accent: '#ff8fbd',
+  glow: '#ffb8d9',
+  levels: ['#f7c9dd', '#ffd6e8', '#ffb8d9', '#ffa8cf', '#ff8fbd'],
+  winLit: '#ffffff',
+  winDark: '#ffd6e8',
+};
+
+export const pink = { day: pinkDay, night: pinkNight };
+
 export const THEMES = {
   matrix: {
     name: "Matrix",
@@ -86,6 +116,8 @@ export const THEMES = {
     winLit: "#ffffff",
     winDark: "#1e2e50",
   },
+
+  pink: pinkNight, // Fallback para compatibilidade direta se necessário
 };
 
-export const DEFAULT_THEME = "matrix";
+export const DEFAULT_THEME = "pink";

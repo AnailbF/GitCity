@@ -2,11 +2,12 @@
  * ContributionGraph3D.jsx — GitCity
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { THEMES, DEFAULT_THEME } from "../../constants/themes";
 import { useContributionData } from "../../hooks/useContributionData";
 import { useMousePosition } from "../../hooks/useMousePosition";
 import { useMountAnimation } from "../../hooks/useMountAnimation";
+import { usePinkTheme } from "../../hooks/usePinkTheme";
 
 import { IsometricGrid } from "./IsometricGrid";
 import { BirdsEyeGrid } from "./BirdsEyeGrid";
@@ -117,12 +118,22 @@ export function ContributionGraph3D({
   defaultView = null,
   username = "",
 }) {
-  const [activeTheme, setActiveTheme] = useState(themeName);
+  const pinkTheme = usePinkTheme();
+  
+  // Lógica para forçar o tema pink em 2026
+  const currentYear = new Date().getFullYear();
+  const is2026 = currentYear === 2026;
+  
+  const [activeTheme, setActiveTheme] = useState(is2026 ? "pink" : themeName);
   const [view, setView] = useState(SLUG_TO_VIEW[defaultView] || "iso");
   const [timeRange, setTimeRange] = useState("12m");
   const [hoveredCell, setHoveredCell] = useState(null);
 
-  const theme = THEMES[activeTheme] ?? THEMES[DEFAULT_THEME];
+  // Se for 2026, força o tema pink dinâmico
+  const theme = is2026 
+    ? pinkTheme 
+    : (activeTheme === 'pink' ? pinkTheme : (THEMES[activeTheme] ?? THEMES[DEFAULT_THEME]));
+
   const mouse = useMousePosition();
   const mounted = useMountAnimation(`${activeTheme}-${view}-${timeRange}`);
 
